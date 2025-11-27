@@ -33,19 +33,32 @@ namespace Barbearia23.Infra.Repositories
             await _context.SaveChangesAsync(); 
         }
 
-        public async Task Remover(int id)
-        {
-            var cli = _context.Clientes.FindAsync(id);
-            if ( cli != null)
-            {
-                _context.Clientes.Remove(await cli);
-                await _context.SaveChangesAsync();
-            }
-        }
+        //public async Task Remover(int id)
+        //{
+        //    var cli = _context.Clientes.FindAsync(id);
+        //    if ( cli != null)
+        //    {
+        //        _context.Clientes.Remove(await cli);
+        //        await _context.SaveChangesAsync();
+        //    }
+        //}
 
         public async Task<Cliente?> BuscarPorId(int id)
         {
             return await _context.Clientes.FindAsync(id);
+        }
+
+        public async Task Remover(int id)
+        {
+            var cliente = await _context.Clientes.FindAsync(id);
+
+            if (cliente == null)
+                return;
+
+            cliente.Ativo = false;
+
+            _context.Clientes.Update(cliente);
+            await _context.SaveChangesAsync();
         }
     }
 }
