@@ -1,5 +1,5 @@
 ﻿using Barbearia23.Domain;
-using Barbearia23.Infra.Repositories;
+using Barbearia23.Infra.Repositories.Interfaces;
 using Barbearia23.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -17,7 +17,7 @@ namespace Barbearia23.Services.Implementations
 
         public async Task<IEnumerable<Cliente>> ListarClientes()
         {
-            return await _repo.GetClientes();
+            return await _repo.BuscarClientes();
         }
         public Task<Cliente?> BuscarPorId(int id) => _repo.BuscarPorId(id);
         

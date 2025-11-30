@@ -11,10 +11,15 @@ namespace Barbearia23.Infra.Context
           : base(options) { }
 
         public DbSet<Cliente> Clientes { get; set; }
-
+        public DbSet<Agendamento> Agendamento { get; set; }
+        public DbSet<Barbeiro> Barbeiro { get; set; }
+        public DbSet<Servico> Servico { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Cliente>().ToTable("Cliente");
+            modelBuilder.Entity<Agendamento>().ToTable("Agendamento");
+            modelBuilder.Entity<Barbeiro>().ToTable("Barbeiro");
+            modelBuilder.Entity<Servico>().ToTable("Servico");
         }
     }
 }

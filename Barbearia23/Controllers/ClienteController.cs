@@ -57,7 +57,5 @@ namespace Barbearia23.Controllers
 
              return NoContent();
         }
-
-
     }
 }

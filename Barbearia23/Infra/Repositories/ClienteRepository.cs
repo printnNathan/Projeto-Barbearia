@@ -1,5 +1,6 @@
 ﻿using Barbearia23.Domain;
 using Barbearia23.Infra.Context;
+using Barbearia23.Infra.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Barbearia23.Infra.Repositories
@@ -13,7 +14,7 @@ namespace Barbearia23.Infra.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Cliente>> GetClientes()
+        public async Task<IEnumerable<Cliente>> BuscarClientes()
         {
             return await _context.Clientes.ToListAsync();
         }
