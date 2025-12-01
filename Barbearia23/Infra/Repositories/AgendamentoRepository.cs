@@ -14,9 +14,18 @@ namespace Barbearia23.Infra.Repositories
             _context = context;
         }
 
+        //public async Task<IEnumerable<Agendamento>> BuscarAgendamentos()
+        //{
+        //    return await _context.Agendamento.ToListAsync();
+        //}
+
         public async Task<IEnumerable<Agendamento>> BuscarAgendamentos()
         {
-            return await _context.Agendamento.ToListAsync();
+            return await _context.Agendamento
+                                .Include(a => a.Cliente)
+                                .Include(a => a.Servico)
+                                .Include(a => a.Barbeiro)
+                                .ToListAsync();
         }
 
         public async Task Criar(Agendamento agendamento)
