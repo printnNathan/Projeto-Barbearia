@@ -1,7 +1,15 @@
 ﻿using Barbearia23.Domain;
+using Barbearia23.Infra.Context;
 using Barbearia23.Models;
+using Barbearia23.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Barbearia23.Controllers
 {
@@ -9,34 +17,73 @@ namespace Barbearia23.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static Cliente cliente = new Cliente();
+        private readonly BarbeariaContext _context;
+        private readonly IConfiguration _config;
+        private readonly PasswordHasher<Cliente> _hasher;
 
         [HttpPost("register")]
-        public ActionResult<Cliente> Registro(ClienteDTO request)
+        public async Task<ActionResult> Registrar(ClienteDTO request)
         {
-            var hashedPassowrd = new PasswordHasher<Cliente>()
-                 .HashPassword(cliente, request.Senha);
+            if(string.IsNullOrWhiteSpace(request.Nome) ||
+               string.IsNullOrWhiteSpace(request.Senha))
+               return BadRequest("Nome e Senha são obrigatórios.");
 
-            cliente.Nome = request.Nome;
-            cliente.Senha = hashedPassowrd;
+            var existe = await _context.Clientes.AnyAsync(c => c.Nome == request.Nome);
+            if ( existe )
+                return BadRequest("Nome de usuário já existe.");
 
-            return Ok(cliente);
+            var cliente = new Cliente
+            {
+                Nome = request.Nome
+            };
+
+            cliente.PasswordHash = _hasher.HashPassword(cliente, request.Senha);
+
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
+
+            return Ok("Usuário registrado com sucesso.");
         }
 
         [HttpPost("login")]
-        public ActionResult<string> Login(ClienteDTO request)
+        public async Task<ActionResult<string>> Login(Cliente request)
         {
-            if (request.Nome != cliente.Nome)
-            {
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.Nome == request.Nome);
+
+            if ( cliente == null)
                 return BadRequest("Usuário não encontrado.");
-            }
-            if (new PasswordHasher<Cliente>().VerifyHashedPassword(cliente, cliente.Pass, request.Senha))
-                == PasswordVerificationResult.Failed)
-                {
-                    
-                }
+
+            var result = _hasher.VerifyHashedPassword(cliente, cliente.PasswordHash, request.Senha);
+
+            if (result != PasswordVerificationResult.Success)
+                return BadRequest("Senha incorreta");
+
+            string token = GerarToken(cliente);
+            return Ok(token);
         }
 
-        //https://youtu.be/6EEltKS8AwA?si=4OS70uUcPyoR6H2L
+        private string GerarToken(Cliente cliente)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, cliente.Nome),
+                new Claim("ClienteId", cliente.ClienteId.ToString())
+            };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+            );
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
     }
 }
