@@ -1,4 +1,5 @@
 ﻿using Barbearia23.Domain;
+using Barbearia23.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Data.Common;
