@@ -19,7 +19,14 @@ namespace Barbearia23.Controllers
     {
         private readonly BarbeariaContext _context;
         private readonly IConfiguration _config;
-        private readonly PasswordHasher<Cliente> _hasher;
+        private readonly PasswordHasher<Cliente> _hasher = new PasswordHasher<Cliente>();
+
+        public AuthController(BarbeariaContext context, IConfiguration config)
+        {
+            _context = context;
+            //_hasher = new PasswordHasher<Cliente>();
+            _config = config;
+        }
 
         [HttpPost("register")]
         public async Task<ActionResult> Registrar(ClienteDTO request)
@@ -28,13 +35,15 @@ namespace Barbearia23.Controllers
                string.IsNullOrWhiteSpace(request.Senha))
                return BadRequest("Nome e Senha são obrigatórios.");
 
-            var existe = await _context.Clientes.AnyAsync(c => c.Nome == request.Nome);
+            var existe = await _context.Clientes.AnyAsync(c => c.Nome == request.Nome); //Erro nesta linha
             if ( existe )
                 return BadRequest("Nome de usuário já existe.");
 
             var cliente = new Cliente
             {
-                Nome = request.Nome
+                Nome = request.Nome,
+                Senha = request.Senha,
+                Ativo = request.Ativo
             };
 
             cliente.PasswordHash = _hasher.HashPassword(cliente, request.Senha);

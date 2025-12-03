@@ -15,6 +15,7 @@ namespace Barbearia23.Infra.Context
         public DbSet<Agendamento> Agendamento { get; set; }
         public DbSet<Barbeiro> Barbeiro { get; set; }
         public DbSet<Servico> Servico { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Cliente>().ToTable("Cliente");
